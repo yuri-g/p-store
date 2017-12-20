@@ -16,6 +16,16 @@ class KeyGenerator {
         });
     }
 
+    static readPassword(path, passphrase) {
+        return new Promise((resolve, reject) => {
+            ipcRenderer.on('store:read-password-response', (_, args) => {
+                resolve(args.password);
+            });
+
+            ipcRenderer.send('store:read-password', {path: path, passphrase: passphrase});
+        });
+    }
+
     static keysExist() {
         return new Promise((resolve, reject) => {
             ipcRenderer.on('key:exist-response', (_, args) => {

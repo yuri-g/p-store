@@ -19,7 +19,11 @@ window.onload = () => {
 
         Array.from(h.findByClass('password')).forEach((el) => {
             h.onClick(el, (e) => {
-                console.log(e.target);
+                const path = e.target.dataset.path;
+                const passphrase = h.findById('passphrase-input').value;
+                KeyGenerator.readPassword({path: path, passphrase: passphrase}).then((data) => {
+                    console.log(data);
+                });
             })
         });
     });

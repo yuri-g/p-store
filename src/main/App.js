@@ -56,7 +56,33 @@ class App {
         ipcMain.on('store:add-password', (event, args) => {
             crypto.randomBytes(12, (_, buf) => {
                 const p = buf.toString('hex');
-                this.store.storePassword(p, args.name.name, this.keyPath, this.pubKeyPath) ;           });
+                this.store.storePassword(p, args.name.name, this.keyPath, this.pubKeyPath) ;           
+            });
+        });
+
+        ipcMain.on('store:read-password', (event, args) => {
+            const password = openpgp.message.readArmored(
+                fs.readFileSync(args.path.path).toString()
+            );
+
+            console.log(this.keyPath, this.pubKeyPath);
+
+            const key = fs.readFileSync(this.keyPath).toString();
+            const pubKey = fs.readFileSync(this.pubKeyPath).toString();
+
+            const privateKeyObject = openpgp.key.readArmored(key).keys[0];
+            privateKeyObject.decrypt(args.path.passphrase);
+
+            const options = {
+                message: password,
+                privateKey: privateKeyObject
+            };
+
+            openpgp.decrypt(options).then((response) => {
+                event.sender.send('store:read-password-response', response.data);
+            }).catch((reason) => {
+                console.log(reason);
+            });
         });
     }
 }
